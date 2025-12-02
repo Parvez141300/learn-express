@@ -1,12 +1,10 @@
 import express, { NextFunction, Request, Response, json } from "express";
 import { Pool } from "pg";
-import dotenv from "dotenv";
-import path from "path";
-
-dotenv.config({ path: path.join(process.cwd(), ".env") })
+import config from "./config";
 
 const app = express()
-const port = 5000
+const port = config.port || 5000;
+
 
 
 // parser
@@ -15,7 +13,7 @@ app.use(express.json())
 
 // db
 const pool = new Pool({
-    connectionString: `${process.env.CONNECTION_STR}`
+    connectionString: `${config.connection_str}`
 });
 
 const initDB = async () => {
@@ -58,6 +56,7 @@ const logger = (req: Request, res: Response, next: NextFunction) => {
     next();
 }
 
+// root route of server
 app.get('/', logger, (req: Request, res: Response) => {
     res.send('Hello Full Stack Developer!')
 })
@@ -189,12 +188,12 @@ app.get("/todos/:id", async (req: Request, res: Response) => {
     try {
         const result = await pool.query("SELECT * FROM todos WHERE id = $1", [req.params.id]);
 
-        if(result.rows.length === 0){
-            return res.status(404).json({error: "todo not found"})
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "todo not found" })
         }
 
         return res.status(200).json(result.rows[0]);
-    } catch (error:any) {
+    } catch (error: any) {
         res.status(500).json({
             success: false,
             message: error.message
@@ -215,6 +214,27 @@ app.post("/todos", async (req: Request, res: Response) => {
             success: false,
             message: "successfully inserted",
             data: result.rows[0]
+        })
+    } catch (error: any) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        })
+    }
+})
+
+//* todos update
+app.put("/todos/:id", async (req: Request, res: Response) => {
+    const { title } = req.body;
+    try {
+        const result = await pool.query(`
+            UPDATE todos SET title = $1 WHERE id=$2 RETURNING * 
+            `, [title, req.params.id]);
+
+        res.status(200).json({
+            success: true,
+            message: "Successfully updated todo",
+            updated: result.rows[0]
         })
     } catch (error: any) {
         res.status(500).json({
