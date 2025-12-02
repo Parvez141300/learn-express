@@ -3,6 +3,7 @@ import config from "./config";
 import initDB, { pool } from "./config/db";
 import logger from "./middleware/logger";
 import { userRoutes } from "./modules/user/user.routes";
+import { todoRoutes } from "./modules/todo/todo.routes";
 
 const app = express()
 const port = config.port || 5000;
@@ -21,6 +22,8 @@ app.get('/', logger, (req: Request, res: Response) => {
 
 // user crud
 app.use("/users", userRoutes);
+// todo crud
+app.use("/todos", todoRoutes);
 
 // users crud
 // app.post("/users", async (req: Request, res: Response) => {
@@ -147,65 +150,65 @@ app.use("/users", userRoutes);
 // })
 
 //* get single todos
-app.get("/todos/:id", async (req: Request, res: Response) => {
-    try {
-        const result = await pool.query("SELECT * FROM todos WHERE id = $1", [req.params.id]);
+// app.get("/todos/:id", async (req: Request, res: Response) => {
+//     try {
+//         const result = await pool.query("SELECT * FROM todos WHERE id = $1", [req.params.id]);
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: "todo not found" })
-        }
+//         if (result.rows.length === 0) {
+//             return res.status(404).json({ error: "todo not found" })
+//         }
 
-        return res.status(200).json(result.rows[0]);
-    } catch (error: any) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        })
-    }
-})
+//         return res.status(200).json(result.rows[0]);
+//     } catch (error: any) {
+//         res.status(500).json({
+//             success: false,
+//             message: error.message
+//         })
+//     }
+// })
 
 //* todos post
-app.post("/todos", async (req: Request, res: Response) => {
-    const { user_id, title } = req.body;
+// app.post("/todos", async (req: Request, res: Response) => {
+//     const { user_id, title } = req.body;
 
-    try {
-        const result = await pool.query(`
-            INSERT INTO todos(user_id, title) VALUES($1, $2) RETURNING * 
-            `, [user_id, title]);
+//     try {
+//         const result = await pool.query(`
+//             INSERT INTO todos(user_id, title) VALUES($1, $2) RETURNING * 
+//             `, [user_id, title]);
 
-        res.status(500).json({
-            success: false,
-            message: "successfully inserted",
-            data: result.rows[0]
-        })
-    } catch (error: any) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        })
-    }
-})
+//         res.status(500).json({
+//             success: false,
+//             message: "successfully inserted",
+//             data: result.rows[0]
+//         })
+//     } catch (error: any) {
+//         res.status(500).json({
+//             success: false,
+//             message: error.message
+//         })
+//     }
+// })
 
 //* todos update
-app.put("/todos/:id", async (req: Request, res: Response) => {
-    const { title } = req.body;
-    try {
-        const result = await pool.query(`
-            UPDATE todos SET title = $1 WHERE id=$2 RETURNING * 
-            `, [title, req.params.id]);
+// app.put("/todos/:id", async (req: Request, res: Response) => {
+//     const { title } = req.body;
+//     try {
+//         const result = await pool.query(`
+//             UPDATE todos SET title = $1 WHERE id=$2 RETURNING * 
+//             `, [title, req.params.id]);
 
-        res.status(200).json({
-            success: true,
-            message: "Successfully updated todo",
-            updated: result.rows[0]
-        })
-    } catch (error: any) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        })
-    }
-})
+//         res.status(200).json({
+//             success: true,
+//             message: "Successfully updated todo",
+//             updated: result.rows[0]
+//         })
+//     } catch (error: any) {
+//         res.status(500).json({
+//             success: false,
+//             message: error.message
+//         })
+//     }
+// })
 
 // invalid route error handling middleware
 app.use((req, res) => {
