@@ -1,9 +1,10 @@
 import { pool } from "../../config/db";
 
 // create a user in db
-const createUserInDB = async (name: string, email: string) => {
+const createUserInDB = async (payload: Record<string, unknown>) => {
+    const {name, email, password} = payload;
     const result = await pool.query(
-        `INSERT INTO users(name, email) VALUES($1, $2) RETURNING *`, [name, email]);
+        `INSERT INTO users(name, email, password) VALUES($1, $2, $3) RETURNING *`, [name, email, password]);
 
     return result;
 }
